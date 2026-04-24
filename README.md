@@ -1,12 +1,12 @@
-# Vanilla Terraria Dedicated Server (.NET Core)
+# 🧱 Vanilla Terraria Dedicated Server (.NET Core)
+Легковесный, оптимизированный образ сервера Terraria для Linux, работающий на базе **.NET 8**.  
+[![Docker Pulls](https://img.shields.io/docker/pulls/zhencorp/terraria?style=flat-square&logo=docker)]([https://hub.docker.com/r/zhencorp/terraria])
+[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=flat-square&logo=github-actions)](https://github.com/zh3ncorp/Terraria/actions)
 
-Легковесный, оптимизированный образ сервера Terraria для Linux, работающий на базе **.NET 8**. 
-
+---
 
 ## 🚀 Быстрый старт
-
 Самый простой способ запустить сервер с миром по умолчанию:
-
 ```bash
 docker run -d \
   --name terraria \
@@ -15,12 +15,36 @@ docker run -d \
   -v ./config:/terraria/config \
   zhencorp/terraria:1456
 ```
-Для запуска **обязательно** требуется подмонтировать файл serverconfig.txt в контейнер.
-В указанном примере файл находится в папке config. 
-Папку желательно использовать для того, чтобы помимо файла serverconfig.txt также подкладывать в неё прочие файлы, например banlist.txt
+⚠️ Важно: файл serverconfig.txt обязателен и должен быть смонтирован строго по пути /terraria/config/serverconfig.txt.  
+В примере выше он лежит в локальной папке ./config/.  
+Вы также можете смонтировать целую папку ./config (как в быстром старте ниже), но тогда файл внутри неё должен называться serverconfig.txt.  
 
+---
 
-Пример содержимого serverconfig.txt c подробным описанием параметров запуска сервера
+## 🐳 Docker Compose (рекомендуемый способ)
+```yaml
+version: '3.8'
+
+services:
+  terraria:
+    image: zhencorp/terraria:1.4.5.6
+    container_name: terraria
+    restart: unless-stopped
+    ports:
+      - "7777:7777/tcp"  # внутренний порт всегда должен быть 7777
+    volumes:
+      - ./worlds:/terraria/worlds
+      - ./config:/terraria/config  # здесь обязательно должен лежать serverconfig.txt
+```
+Запуск:  
+```bash
+docker-compose up -d
+```
+   
+<details>
+  
+  <summary> ⚙️ Пример содержимого serverconfig.txt c подробным описанием параметров запуска сервера (нажмите, чтобы раскрыть)</summary>
+
 ```
 # Пример конфигурации сервера. 
 # Значение параметра world и worldpath должно быть корректно смонтировано при запуске контейнера, чтобы мир не затирался при пересоздании контейнера. Пример монтирования для данного случая: docker run -v /host/path:/terraria/worlds
@@ -28,7 +52,6 @@ world=/terraria/worlds/docker_test.wld
 worldpath=/terraria/worlds
 worldname=docker_test
 maxplayers=8
-port=7777
 password=docker_test
 difficulty=0
 autocreate=1
@@ -89,9 +112,10 @@ priority=1
 # Максимальное количество игроков (1-255).
 #maxplayers=8
 
-# Порт сервера. Может быть любым доступным, но для работы сервера нужно правильно пробросить порт при запуске контейнера
+# Порт сервера (по умолчанию 7777). Может быть любым доступным, но для работы сервера нужно правильно пробросить порт при запуске контейнера
 # Пример проброса порта: docker run -p 1234:7777
 # Это значит, что внутренний порт сервера будет 7777, а внешний (к которому мы будем подключаться) - 1234. Всё зависит от нужд и возможностей
+# Порт обязательно оставляем по умолчанию, потому что он завязан на HEALTHCHECK контейнера
 #port=7777
 
 # IP адрес для прослушивания (0.0.0.0 - все интерфейсы).
@@ -163,3 +187,34 @@ priority=1
 #journeypermission_biomespread_setfrozen=2
 #journeypermission_setspawnrate=2
 ```
+Все пути внутри контейнера должны начинаться с /terraria/ (рабочая директория).
+
+</details>
+
+---
+
+## ❓ Часто задаваемые вопросы (FAQ)
+`Вопрос`: Почему контейнер сразу завершается с ошибкой?  
+`Ответ`: Скорее всего, вы не смонтировали serverconfig.txt по пути /terraria/config/serverconfig.txt. Исправьте монтирование или проверьте, что файл существует.
+
+`Вопрос`: Как обновить сервер до новой версии?  
+`Ответ`: Остановите и удалите старый контейнер, затем запустите новый с тегом новой версии (например, zhencorp/terraria:1.4.5.8). Миры и конфиги сохранятся, если вы используете тома.
+
+`Вопрос`: Могу ли я использовать TShock?  
+`Ответ`: Нет, это ванильная сборка.
+
+`Вопрос`: Как посмотреть логи сервера?  
+`Ответ`: Используйте docker logs terraria (или docker-compose logs).
+
+---
+
+## 📂 Тома (volumes)
+
+| Точка монтирования в контейнере | Назначение |
+| :--- | :--- |
+| `/terraria/worlds` | Хранилище файлов миров (`*.wld`) |
+| `/terraria/config` | Папка с `serverconfig.txt`, `banlist.txt` и др. |
+
+> **Примечание:** образ требует только монтирования `serverconfig.txt`. Том /worlds опционален и нужен только для сохранения миров.
+
+---

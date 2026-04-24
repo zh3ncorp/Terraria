@@ -13,7 +13,7 @@ docker run -d \
   -p 7777:7777/tcp \
   -v ./worlds:/terraria/worlds \
   -v ./config:/terraria/config \
-  zhencorp/terraria:1456
+  zhencorp/terraria:1.4.5.6
 ```
 ⚠️ Важно: файл serverconfig.txt обязателен и должен быть смонтирован строго по пути /terraria/config/serverconfig.txt.  
 В примере выше он лежит в локальной папке ./config/.  

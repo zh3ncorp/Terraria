@@ -1,6 +1,6 @@
 # 🧱 Vanilla Terraria Dedicated Server (.NET Core)
 Легковесный, оптимизированный образ сервера Terraria для Linux, работающий на базе **.NET 8**.  
-[![Docker Pulls](https://img.shields.io/docker/pulls/zhencorp/terraria?style=flat-square&logo=docker)]([https://hub.docker.com/r/zhencorp/terraria])
+[![Docker Pulls](https://img.shields.io/docker/pulls/zhencorp/terraria?style=flat-square&logo=docker)](https://hub.docker.com/repository/docker/zhencorp/terraria/general)
 [![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=flat-square&logo=github-actions)](https://github.com/zh3ncorp/Terraria/actions)
 
 ---

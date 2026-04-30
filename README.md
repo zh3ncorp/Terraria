@@ -11,13 +11,12 @@
 docker run -d \
   --name terraria \
   -p 7777:7777/tcp \
-  -v ./worlds:/terraria/worlds \
-  -v ./config:/terraria/config \
+  -v /path/to/worlds/on/host:/terraria/worlds \
+  -v /path/to/serverconfig.txt:/terraria/config/serverconfig.txt \
   zhencorp/terraria:1.4.5.6
 ```
 ⚠️ Важно: файл serverconfig.txt обязателен и должен быть смонтирован строго по пути /terraria/config/serverconfig.txt.  
-В примере выше он лежит в локальной папке ./config/.  
-Вы также можете смонтировать целую папку ./config (как в быстром старте ниже), но тогда файл внутри неё должен называться serverconfig.txt.  
+Вы также можете смонтировать целую папку ./config (как в примере с docker compose), но тогда файл внутри неё должен называться serverconfig.txt. В этой папке могут лежать также другие конфигурационные файлы, например banlist.txt  
 
 ---
 

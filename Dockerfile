@@ -1,6 +1,4 @@
-FROM mcr.microsoft.com/dotnet/runtime:8.0
-
-RUN apt-get update && apt-get install -y --no-install-recommends bash && rm -rf /var/lib/apt/lists/*
+FROM debian:bookworm-slim
 
 RUN mkdir -p /terraria /worlds /config
 
@@ -11,7 +9,9 @@ RUN chmod +x /terraria/srv/TerrariaServer* /usr/local/bin/run_server.sh
 
 WORKDIR /terraria
 
-HEALTHCHECK --interval=20s --timeout=10s --start-period=30s --retries=10 \
-  CMD bash -c "exec 3<> /dev/tcp/localhost/7777" || exit 1
+# Проверяем только, что порт 7777 слушается (0x1E61, состояние 0A = LISTEN).
+# Не открываем TCP-соединение к серверу: начиная с 1.4.5.7 сервер может падать
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
+  CMD grep -sqiE ':1E61 [0-9A-F]+:0000 0A' /proc/net/tcp /proc/net/tcp6 || exit 1
 
 ENTRYPOINT ["/usr/local/bin/run_server.sh"]

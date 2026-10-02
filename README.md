@@ -1,5 +1,6 @@
-# 🧱 Vanilla Terraria Dedicated Server (.NET Core)
-Легковесный, оптимизированный образ сервера Terraria для Linux, работающий на базе **.NET 8**.  
+# 🧱 Vanilla Terraria Dedicated Server
+Легковесный образ ванильного сервера Terraria для Linux на базе **debian:bookworm-slim**.  
+Сервер поставляется со встроенным Mono (MonoKickstart), отдельный .NET runtime не нужен.  
 [![Docker Pulls](https://img.shields.io/docker/pulls/zhencorp/terraria?style=flat-square&logo=docker)](https://hub.docker.com/repository/docker/zhencorp/terraria/general)
 [![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?style=flat-square&logo=github-actions)](https://github.com/zh3ncorp/Terraria/actions)
 
@@ -13,7 +14,7 @@ docker run -d \
   -p 7777:7777/tcp \
   -v /path/to/worlds/on/host:/terraria/worlds \
   -v /path/to/serverconfig.txt:/terraria/config/serverconfig.txt \
-  zhencorp/terraria:1.4.5.6
+  zhencorp/terraria:1.4.5.8
 ```
 ⚠️ Важно: файл serverconfig.txt обязателен и должен быть смонтирован строго по пути /terraria/config/serverconfig.txt.  
 Вы также можете смонтировать целую папку ./config (как в примере с docker compose), но тогда файл внутри неё должен называться serverconfig.txt. В этой папке могут лежать также другие конфигурационные файлы, например banlist.txt  
@@ -26,7 +27,7 @@ version: '3.8'
 
 services:
   terraria:
-    image: zhencorp/terraria:1.4.5.6
+    image: zhencorp/terraria:1.4.5.8
     container_name: terraria
     restart: unless-stopped
     ports:
@@ -114,7 +115,7 @@ priority=1
 # Порт сервера, по умолчанию 7777. Может быть любым, но для работы сервера нужно правильно пробросить порт при запуске контейнера
 # Пример проброса порта: docker run -p 1234:7777
 # Это значит, что внутренний порт сервера будет 7777, а внешний (к которому мы будем подключаться) - 1234. Всё зависит от нужд и возможностей
-# Внутренний порт ни в коем случае не менять, так как на него завязаны HEALTHCHECK. С другим портом docker будет убивать контейнер
+# Внутренний порт ни в коем случае не менять, так как на него завязан HEALTHCHECK. С другим портом контейнер будет помечен как unhealthy
 #port=7777
 
 # IP адрес для прослушивания (0.0.0.0 - все интерфейсы).
@@ -199,6 +200,12 @@ priority=1
 `Вопрос`: Как обновить сервер до новой версии?  
 `Ответ`: Остановите и удалите старый контейнер, затем запустите новый с тегом новой версии (например, zhencorp/terraria:1.4.5.8). Миры и конфиги сохранятся, если вы используете тома.
 Использование мира с понижением версии сервера невозможно, только апгрейд.
+
+`Вопрос`: Сервер 1.4.5.7/1.4.5.8 падает с `ObjectDisposedException` после строк `127.0.0.1:xxxxx подключается...`. Что делать?  
+`Ответ`: Ранние сборки 1.4.5.7 и 1.4.5.8 падают от TCP-подключений без игрового хендшейка (healthcheck, сканеры портов). Раньше такие подключения создавал healthcheck самого образа. Теперь он только проверяет, что порт 7777 в состоянии LISTEN, и к серверу не подключается. Обновите образ: `docker compose pull && docker compose up -d`. Если сервер всё равно падает, ограничьте доступ к порту фаерволом: так его не будут трогать внешние сканеры.
+
+`Вопрос`: Как работает healthcheck?  
+`Ответ`: Каждые 20 секунд контейнер проверяет по `/proc/net/tcp`, что сервер слушает порт 7777. Статус виден в `docker ps` (healthy/unhealthy). Docker сам не перезапускает unhealthy-контейнер: для автоперезапуска при падении процесса используйте `restart: unless-stopped`.
 
 `Вопрос`: Могу ли я использовать TShock?  
 `Ответ`: Нет, это ванильная сборка.
